@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mini Rocket League</title>
+<style>
+  body { margin:0; background:#0b132b; overflow:hidden; }
+  canvas { display:block; }
+  .controls {
+    position:fixed; bottom:20px; width:100%;
+    display:flex; justify-content:space-around;
+  }
+  button {
+    width:70px; height:70px; border-radius:50%;
+    font-size:20px; border:none;
+    background:#5bc0be; color:#000;
+  }
+</style>
+</head>
+<body>
+
+<canvas id="game"></canvas>
+
+<div class="controls">
+  <button ontouchstart="left=true" ontouchend="left=false">◀</button>
+  <button ontouchstart="up=true" ontouchend="up=false">▲</button>
+  <button ontouchstart="right=true" ontouchend="right=false">▶</button>
+</div>
+
+<script>
+const canvas = document.getElementById("game");
+const ctx = canvas.getContext("2d");
+canvas.width = innerWidth;
+canvas.height = innerHeight;
+
+let left=false, right=false, up=false;
+
+const car = { x:100, y:canvas.height/2, vx:0, vy:0 };
+const ball = { x:canvas.width/2, y:canvas.height/2, vx:0, vy:0 };
+
+function update(){
+  if(left) car.vx -= 0.4;
+  if(right) car.vx += 0.4;
+  if(up) car.vy -= 0.4;
+
+  car.vx *= 0.95;
+  car.vy *= 0.95;
+
+  car.x += car.vx;
+  car.y += car.vy;
+
+  // Kolizja z piłką
+  let dx = ball.x - car.x;
+  let dy = ball.y - car.y;
+  let dist = Math.sqrt(dx*dx + dy*dy);
+  if(dist < 40){
+    ball.vx = dx * 0.2;
+    ball.vy = dy * 0.2;
+  }
+
+  ball.x += ball.vx;
+  ball.y += ball.vy;
+  ball.vx *= 0.99;
+  ball.vy *= 0.99;
+
+  ball.x = Math.max(10, Math.min(canvas.width-10, ball.x));
+  ball.y = Math.max(10, Math.min(canvas.height-10, ball.y));
+}
+
+function draw(){
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+
+  // Boisko
+  ctx.strokeStyle="#fff";
+  ctx.strokeRect(20,20,canvas.width-40,canvas.height-40);
+
+  // Samochód
+  ctx.fillStyle="#f72585";
+  ctx.fillRect(car.x-20, car.y-10, 40, 20);
+
+  // Piłka
+  ctx.fillStyle="#ffd166";
+  ctx.beginPath();
+  ctx.arc(ball.x, ball.y, 10, 0, Math.PI*2);
+  ctx.fill();
+}
+
+function loop(){
+  update();
+  draw();
+  requestAnimationFrame(loop);
+}
+loop();
+</script>
+
+</body>
+</html>
